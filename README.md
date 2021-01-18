@@ -5,6 +5,6 @@
 
 #### usage: YAPY.py [-h] [-S] [-I PACKAGE]
 
-*  -h, --help  show this help message and exit
-*  -S          upgrade AUR packages
-*  -I PACKAGE  package to install
+*  -h, --help   show this help message and exit
+*  -S	      upgrade AUR packages
+*  -I PACKAGE  package to install
