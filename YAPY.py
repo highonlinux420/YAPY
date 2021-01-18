@@ -56,9 +56,9 @@ def get_pack(array, org, name, ver, desc, repo, k):
             while True:
                 try:
                     selected = int(input("Select package number: "))
-                    package = [i.Name for i in Package if i.ID == selected and i.Origin == f"{org}"]
-                    if len(package) != 0:
-                        return package[0]
+                    if 0 < selected <= j:
+                        to_download = [i.Name for i in Package if i.ID == selected and i.Origin == f"{org}"][0]
+                        return to_download
                     else:
                         print("Invalid Choice")
                 except KeyboardInterrupt:
@@ -66,7 +66,8 @@ def get_pack(array, org, name, ver, desc, repo, k):
                 except ValueError:
                     print("Invalid Choice")
         elif prompt in ["Y", ""]:
-            get_pack(array, org, name, ver, desc, repo, k + 10)
+            get = get_pack(array, org, name, ver, desc, repo, k + 10)
+            return get
         else:
             print("Invalid Choice")
     except KeyboardInterrupt:
@@ -74,6 +75,7 @@ def get_pack(array, org, name, ver, desc, repo, k):
 
 
 def install_aur(package):
+    print(f"Downloading {package}....")
     subprocess.run(f"mkdir {package} && cd {package}", shell=True, capture_output=True)
     wget = subprocess.run(
         f"wget -O {package}/PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={package}",
@@ -83,14 +85,14 @@ def install_aur(package):
         print("Success! ")
         while True:
             try:
-                prompt = input("Do you want to inspect PKGBUILD? [Y/n] ")
+                prompt = input("Do you want to inspect PKGBUILD? [y/N] ").upper()
             except KeyboardInterrupt:
                 sys.exit()
-            if prompt.upper() in ["Y", "N", ""]:
+            if prompt in ["Y", "N", ""]:
                 break
             else:
                 print("Invalid Choice")
-        if prompt.upper() in ["Y", ""]:
+        if prompt in ["Y"]:
             while True:
                 try:
                     ed = input("Select your editor: (nano, vim, gedit): ")
@@ -145,8 +147,11 @@ elif not args.S and args.Package != None:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(aur_response)
         results_AUR = future.result()
-
-    response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.Package}")
+    try:
+        response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.Package}")
+    except:
+        print("Check your network connection")
+        sys.exit()
     results_REPO = response.json().get("results")
     if len(results_AUR) != 0 or len(results_REPO) != 0:
         print(len(results_AUR), "packages found in AUR")
@@ -188,7 +193,7 @@ elif not args.S and args.Package != None:
                 sys.exit()
             print("Password is incorrect")
     elif choice == "AUR":
-        package = get_pack(results_AUR, "AUR", "Name", "Version", "Description", "Maintainer", 0)
-        install_aur(package=package)
+        to_install = get_pack(results_AUR, "AUR", "Name", "Version", "Description", "Maintainer", 0)
+        install_aur(to_install)
 else:
     print("Type yapy -h for usage")
