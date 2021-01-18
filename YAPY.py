@@ -12,6 +12,10 @@ parser = argparse.ArgumentParser(description="'YAPY', Yet Another Python Yaourt 
 parser.add_argument("package", type=str, help="Package to install")
 args = parser.parse_args()
 
+check_OS = subprocess.run("cat /etc/arch-release", shell=True, capture_output=True)
+if check_OS.returncode != 0:
+    print("Not arch-based system, Quitting....")
+    sys.exit()
 
 def aur_response():
     if len(args.package) > 1:
