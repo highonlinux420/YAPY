@@ -128,8 +128,12 @@ if args.S and args.Package == None:
     outdated = subprocess.run("pacman -Qm", shell=True, text=True, capture_output=True)
     j = 0
     for i in range(len(outdated.stdout.splitlines())):
-        response = requests.get(
-            f"https://aur.archlinux.org/rpc/?v=5&type=info&arg[]={outdated.stdout.splitlines()[i].split(' ')[0]}")
+        try:
+            response = requests.get(
+                f"https://aur.archlinux.org/rpc/?v=5&type=info&arg[]={outdated.stdout.splitlines()[i].split(' ')[0]}")
+        except:
+            print("Check your network connection")
+            sys.exit()
         if response.json().get("results")[0].get("Version") != outdated.stdout.splitlines()[i].split(' ')[1]:
             j += 1
             install_aur(outdated.stdout.splitlines()[i].split(" ")[0])
