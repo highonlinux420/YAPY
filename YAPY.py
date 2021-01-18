@@ -10,7 +10,7 @@ from termcolor import colored
 
 parser = argparse.ArgumentParser(description="'YAPY', Yet Another Python Yaourt :P")
 parser.add_argument("-S", help="upgrade AUR packages", action="store_true")
-parser.add_argument("-I", type=str, help="package to install")
+parser.add_argument("-I", type=str, help="package to install", dest="Package")
 args = parser.parse_args()
 
 check_OS = subprocess.run("cat /etc/arch-release", shell=True, capture_output=True)
@@ -107,9 +107,9 @@ def install_aur(package):
         print(wget.stderr)
 
 def aur_response():
-    if len(args.I) > 1:
+    if len(args.package) > 1:
         try:
-            response = requests.get(f"https://aur.archlinux.org//rpc/?v=5&type=search&by=name-desc&arg={args.I}")
+            response = requests.get(f"https://aur.archlinux.org//rpc/?v=5&type=search&by=name-desc&arg={args.package}")
             results_AUR = response.json().get("results")
             return results_AUR
         except:
@@ -132,12 +132,12 @@ if args.S:
         print("All packages are up-to-date")
     else:
         print(f"{j} packages upgraded")
-elif args.I != None:
+elif args.package != None:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(aur_response)
         results_AUR = future.result()
 
-    response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.I}")
+    response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.package}")
     results_REPO = response.json().get("results")
     if len(results_AUR) != 0 or len(results_REPO) != 0:
         print(len(results_AUR), "packages found in AUR")
