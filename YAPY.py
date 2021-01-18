@@ -18,6 +18,7 @@ if check_OS.returncode != 0:
     print("Not arch-based system, Quitting....")
     sys.exit()
 
+
 class IterPackage(type):
     def __iter__(cls):
         return iter(cls._allPackages)
@@ -31,6 +32,7 @@ class Package(metaclass=IterPackage):
         self.ID = ID
         self.Name = Name
         self.Origin = Origin
+
 
 def get_pack(array, org, name, ver, desc, repo, k):
     j = k + 10
@@ -106,10 +108,11 @@ def install_aur(package):
     else:
         print(wget.stderr)
 
+
 def aur_response():
-    if len(args.package) > 1:
+    if len(args.Package) > 1:
         try:
-            response = requests.get(f"https://aur.archlinux.org//rpc/?v=5&type=search&by=name-desc&arg={args.package}")
+            response = requests.get(f"https://aur.archlinux.org//rpc/?v=5&type=search&by=name-desc&arg={args.Package}")
             results_AUR = response.json().get("results")
             return results_AUR
         except:
@@ -119,12 +122,14 @@ def aur_response():
         print("Package name is too short")
         sys.exit()
 
-if args.S:
+
+if args.S and args.Package == None:
     print("Checking out of date AUR packages...")
     outdated = subprocess.run("pacman -Qm", shell=True, text=True, capture_output=True)
     j = 0
     for i in range(len(outdated.stdout.splitlines())):
-        response = requests.get(f"https://aur.archlinux.org/rpc/?v=5&type=info&arg[]={outdated.stdout.splitlines()[i].split(' ')[0]}")
+        response = requests.get(
+            f"https://aur.archlinux.org/rpc/?v=5&type=info&arg[]={outdated.stdout.splitlines()[i].split(' ')[0]}")
         if response.json().get("results")[0].get("Version") != outdated.stdout.splitlines()[i].split(' ')[1]:
             j += 1
             install_aur(outdated.stdout.splitlines()[i].split(" ")[0])
@@ -132,12 +137,12 @@ if args.S:
         print("All packages are up-to-date")
     else:
         print(f"{j} packages upgraded")
-elif args.package != None:
+elif not args.S and args.Package != None:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(aur_response)
         results_AUR = future.result()
 
-    response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.package}")
+    response = requests.get(f"https://www.archlinux.org/packages/search/json/?q={args.Package}")
     results_REPO = response.json().get("results")
     if len(results_AUR) != 0 or len(results_REPO) != 0:
         print(len(results_AUR), "packages found in AUR")
