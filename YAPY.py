@@ -76,7 +76,7 @@ def get_pack(array, org, name, ver, desc, repo, k):
 
 def install_aur(package):
     print(f"Downloading {package}....")
-    subprocess.run(f"mkdir {package} && cd {package}", shell=True, capture_output=True)
+    subprocess.run(f"mkdir {package}", shell=True, capture_output=True)
     wget = subprocess.run(
         f"wget -O {package}/PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h={package}",
         shell=True,
